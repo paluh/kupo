@@ -20,6 +20,8 @@ import Kupo.Data.Cardano
     , AssetId
     , BinaryData
     , Block
+    , BlockNo (..)
+    , Checkpoint (..)
     , Datum (..)
     , DatumHash
     , ExtendedInputReference
@@ -41,6 +43,7 @@ import Kupo.Data.Cardano
     , TransactionIndex
     , Value
     , assetNameMaxLength
+    , getPointSlotNo
     , hashMetadata
     , mkMetadata
     , mkOutput
@@ -222,6 +225,20 @@ genNonGenesisPoint :: Gen Point
 genNonGenesisPoint = do
     BlockPoint <$> genSlotNo <*> genHeaderHash
 
+mkBlockNoFromSlotNo :: SlotNo -> BlockNo
+mkBlockNoFromSlotNo (SlotNo slotNo) = BlockNo slotNo
+
+-- Use for non genesis points.
+-- For genesis point creates a nonsensical block number `0`
+mkCheckpointFromPoint :: Point -> Checkpoint
+mkCheckpointFromPoint pt = do
+    let
+        slotNo = getPointSlotNo pt
+    Checkpoint pt (mkBlockNoFromSlotNo slotNo)
+
+genCheckpoint :: Gen Checkpoint
+genCheckpoint = mkCheckpointFromPoint <$> genNonGenesisPoint
+
 genNonGenesisPointBetween :: (SlotNo, SlotNo) -> Gen Point
 genNonGenesisPointBetween (SlotNo minSlot, SlotNo maxSlot) =
     BlockPoint <$> fmap SlotNo (choose (minSlot, maxSlot)) <*> genHeaderHash
@@ -237,6 +254,15 @@ genPointsBetween (inf, sup)
             ]
         pt <- BlockPoint slotNo <$> genHeaderHash
         (pt :) <$> genPointsBetween (slotNo, sup)
+
+genCheckpointsBetween :: (SlotNo, SlotNo) -> Gen [Checkpoint]
+genCheckpointsBetween (inf, sup) =
+    map mkCheckpointFromPoint <$> genPointsBetween (inf, sup)
+
+genCheckpointBetween :: (SlotNo, SlotNo) -> Gen Checkpoint
+genCheckpointBetween (inf, sup) = do
+    pt <- genNonGenesisPointBetween (inf, sup)
+    pure $ mkCheckpointFromPoint pt
 
 genOutputIndex :: Gen OutputIndex
 genOutputIndex =
@@ -278,21 +304,20 @@ genQueryablePattern =
         _ -> True
     )
 
-genResult :: Gen Result
-genResult =
-    genResultWith genNonGenesisPoint
-
-genResultWith :: Gen Point -> Gen Result
-genResultWith genPoint = Result
+genResultWith :: Gen Checkpoint -> Gen Result
+genResultWith genCheckpoint' = Result
     <$> genExtendedOutputReference
     <*> genAddress
     <*> genOutputValue
     <*> genDatum
     <*> genScriptReference
-    <*> genPoint
-    <*> frequency [(1, pure Nothing), (5, Just <$> genPoint)]
+    <*> genCheckpoint'
+    <*> frequency [(1, pure Nothing), (5, Just <$> genCheckpoint')]
     <*> frequency [(1, pure Nothing), (5, Just <$> genExtendedInputReference)]
     <*> frequency [(1, pure Nothing), (5, Just <$> genBinaryData)]
+
+genResult :: Gen Result
+genResult = genResultWith genCheckpoint
 
 genOutput :: Gen Output
 genOutput = mkOutput
