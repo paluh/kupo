@@ -43,6 +43,7 @@ import Kupo.Data.Cardano
     , ScriptHash
     , SlotNo (..)
     , TransactionId
+    , TransactionIndex
     )
 import Kupo.Data.Configuration
     ( DeferIndexesInstallation
@@ -89,7 +90,7 @@ data Database (m :: Type -> Type) = Database
         -> DBTransaction m Int
 
     , markInputs
-        :: (TransactionId, SlotNo)
+        :: (TransactionId, SlotNo, TransactionIndex)
         -> [(Pattern, InputIndex, Maybe BinaryData)]
         -> DBTransaction m Int
 

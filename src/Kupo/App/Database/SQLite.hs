@@ -112,7 +112,7 @@ import Kupo.Control.MonadTime
     )
 import Kupo.Data.Cardano
     ( SlotNo (..)
-    , mkOutputReference
+    , mkInputReference
     , slotNoToText
     )
 import Kupo.Data.Configuration
@@ -122,7 +122,7 @@ import Kupo.Data.Configuration
     )
 import Kupo.Data.Database
     ( SortDirection (..)
-    , outputReferenceToRow
+    , extendedInputReferenceToRow
     , patternToSql
     , redeemerToRow
     )
@@ -645,12 +645,12 @@ mkDatabase tr mode longestRollback bracketConnection = Database
         withTotalChanges conn $
             mapM_ (execute_ conn . deleteInputsQry) refs
 
-    , markInputs = \(parentRef, fromIntegral . unSlotNo -> slotNo) refs -> ReaderT $ \conn -> do
+    , markInputs = \(parentRef, fromIntegral . unSlotNo -> slotNo, txIx) refs -> ReaderT $ \conn -> do
         withTotalChanges conn $
             forM_ refs $ \(ref, ix, redeemer)  -> do
                 execute conn (markInputsQry ref)
                     [ SQLInteger slotNo
-                    , SQLBlob (outputReferenceToRow $ mkOutputReference parentRef ix)
+                    , SQLBlob (extendedInputReferenceToRow (mkInputReference parentRef ix, txIx))
                     , maybe SQLNull (SQLBlob . redeemerToRow) redeemer
                     ]
 

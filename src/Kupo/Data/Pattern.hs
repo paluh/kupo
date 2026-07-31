@@ -444,7 +444,6 @@ data Result = Result
     , scriptReference :: !ScriptReference
     , createdAt :: !Checkpoint
     , spentAt :: !(Maybe Checkpoint)
-    , spentBy :: !(Maybe OutputReference)
     , spentBy :: !(Maybe ExtendedInputReference)
     , spentWith :: !(Maybe BinaryData)
     } deriving (Show, Eq)
@@ -543,7 +542,7 @@ data Codecs result bin script policy = Codecs
 
 -- | A higher-level record to represent the aggregation of matched results.
 data Match result bin script policy = Match
-    { consumed :: !(Map (TransactionId, SlotNo) [(Pattern, InputIndex, Maybe BinaryData)])
+    { consumed :: !(Map (TransactionId, SlotNo, TransactionIndex) [(Pattern, InputIndex, Maybe BinaryData)])
     , produced :: ![result]
     , datums :: ![bin]
     , scripts :: ![script]
@@ -597,7 +596,7 @@ matchBlock Codecs{..} patterns blk =
                     (fromMaybe mempty st, fromIntegral (length inputs) - 1)
                     inputs
                 )
-                (getTransactionId tx, getCheckpointSlotNo pt)
+                (getTransactionId tx, getCheckpointSlotNo pt, ix)
                 consumed
         , produced =
             newProduced

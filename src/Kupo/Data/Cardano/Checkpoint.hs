@@ -25,7 +25,6 @@ import Kupo.Data.Cardano.Point
     ( Point
     , getPointSlotNo
     , getPointHeaderHash
-    , unsafeGetPointHeaderHash
     )
 import Kupo.Data.Cardano.SlotNo
     ( slotNoToJson, SlotNo
@@ -57,5 +56,5 @@ getCheckpointHeaderHash checkpoint = getPointHeaderHash (checkpointPoint checkpo
 
 unsafeGetCheckpointHeaderHash :: Checkpoint -> HeaderHash Block
 unsafeGetCheckpointHeaderHash =
-    fromMaybe (error "Point is 'Origin'") . getCheckpointHeaderHash
+    fromMaybe (error "Checkpoint is 'Origin'") . getCheckpointHeaderHash
 {-# INLINABLE unsafeGetCheckpointHeaderHash #-}

@@ -113,6 +113,7 @@ import Kupo.Data.Cardano
     , SlotNo (..)
     , Tip
     , TransactionId
+    , TransactionIndex
     , checkpointPoint
     , distanceToTip
     , getCheckpoint
@@ -560,7 +561,7 @@ rollForwardAll tr inputManagement notifyTip Database{..} patterns blks = do
     onSpentInputs
         :: Tip
         -> SlotNo
-        -> Map (TransactionId, SlotNo) [(Pattern, InputIndex, Maybe BinaryData)]
+        -> Map (TransactionId, SlotNo, TransactionIndex) [(Pattern, InputIndex, Maybe BinaryData)]
         -> DBTransaction m Int
     onSpentInputs = case inputManagement of
         MarkSpentInputs ->

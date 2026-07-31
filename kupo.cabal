@@ -28,6 +28,7 @@ extra-source-files:
     db/v2.1.0/002.sql
     db/v2.1.0/003.sql
     db/v2.10.0/001.sql
+    db/v2.13.0/001.sql
     db/v2.2.0/001.sql
 data-files:
     docs/api/nightly.yaml
