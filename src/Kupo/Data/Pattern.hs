@@ -41,6 +41,7 @@ import Kupo.Data.Cardano
     , BinaryData
     , Datum (..)
     , DatumHash
+    , ExtendedInputReference
     , ExtendedOutputReference
     , InputIndex
     , IsBlock (..)
@@ -67,6 +68,7 @@ import Kupo.Data.Cardano
     , getAddress
     , getDatum
     , getDelegationPartBytes
+    , getInputIndex
     , getOutputIndex
     , getPaymentPartBytes
     , getPointSlotNo
@@ -440,7 +442,7 @@ data Result = Result
     , scriptReference :: !ScriptReference
     , createdAt :: !Point
     , spentAt :: !(Maybe Point)
-    , spentBy :: !(Maybe OutputReference)
+    , spentBy :: !(Maybe ExtendedInputReference)
     , spentWith :: !(Maybe BinaryData)
     } deriving (Show, Eq)
 
@@ -492,9 +494,11 @@ resultToJson referenceFlag quantityEncoding Result{..} = Json.pairs $ mconcat
                     , Json.pair "header_hash"
                         (headerHashToJson (unsafeGetPointHeaderHash point))
                     , Json.pair "transaction_id"
-                        (maybe Json.null_ (transactionIdToJson . getTransactionId) spentBy)
+                        (maybe Json.null_ (transactionIdToJson . getTransactionId . fst) spentBy)
+                    , Json.pair "transaction_index"
+                        (maybe Json.null_ (transactionIndexToJson . snd) spentBy)
                     , Json.pair "input_index"
-                        (maybe Json.null_ (outputIndexToJson . getOutputIndex) spentBy)
+                        (maybe Json.null_ (outputIndexToJson . getInputIndex . fst) spentBy)
                     , Json.pair "redeemer"
                         (maybe Json.null_ binaryDataToJson spentWith)
                     ]

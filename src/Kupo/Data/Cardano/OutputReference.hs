@@ -39,10 +39,24 @@ type OutputReference =
 type ExtendedOutputReference =
     (OutputReference, TransactionIndex)
 
+-- InputReference
+
+-- It happens that we encode inputs using the same structure as outputs
+-- the difference is that an index in this case is a transaction
+-- input number.
+type InputReference =
+    Input
+
+type ExtendedInputReference =
+    (OutputReference, TransactionIndex)
+
 getOutputIndex :: OutputReference -> OutputIndex
 getOutputIndex (Ledger.TxIn _ (Ledger.TxIx ix)) =
     ix
 {-# INLINABLE getOutputIndex #-}
+
+getInputIndex :: InputReference -> OutputIndex
+getInputIndex = getOutputIndex
 
 mkOutputReference
     :: TransactionId
@@ -51,6 +65,12 @@ mkOutputReference
 mkOutputReference i =
     Ledger.TxIn i . Ledger.TxIx
 {-# INLINABLE mkOutputReference #-}
+
+mkInputReference
+    :: TransactionId
+    -> OutputIndex
+    -> InputReference
+mkInputReference = mkOutputReference
 
 withReferences
     :: OutputIndex

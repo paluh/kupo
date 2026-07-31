@@ -29,6 +29,12 @@ module Kupo.Data.Database
     , extendedOutputReferenceToRow
     , extendedOutputReferenceFromRow
 
+      -- * ExtendedInputReference / InputReference
+    , inputReferenceToRow
+    , inputReferenceFromRow
+    , extendedInputReferenceToRow
+    , extendedInputReferenceFromRow
+
       -- * Pattern
     , patternToRow
     , patternFromRow
@@ -175,7 +181,7 @@ resultFromRow row = App.Result
     , App.spentAt =
         pointFromRow <$> (Checkpoint <$> spentAtHeaderHash row <*> spentAtSlotNo row)
     , App.spentBy =
-        outputReferenceFromRow <$> spentBy row
+        extendedOutputReferenceFromRow <$> spentBy row
     , App.spentWith =
         redeemerFromRow <$> spentWith row
     }
@@ -210,7 +216,7 @@ resultToRow x =
          in (checkpointSlotNo <$> row, checkpointHeaderHash <$> row)
 
     spentBy =
-        outputReferenceToRow <$> App.spentBy x
+        extendedOutputReferenceToRow <$> App.spentBy x
 
     spentWith =
         redeemerToRow <$> App.spentWith x
@@ -287,6 +293,24 @@ extendedOutputReferenceFromRow bytes =
         outIx <- Ledger.TxIx <$> B.getWord16be
         txIx <- B.getWord16be
         pure (Ledger.TxIn txId outIx, txIx)
+
+--
+-- Input Reference
+--
+
+-- Same encoding as above but the semantics of the middle index is slightly different.
+
+extendedInputReferenceToRow :: App.ExtendedInputReference -> ByteString
+extendedInputReferenceToRow = extendedOutputReferenceToRow
+
+inputReferenceToRow :: App.InputReference -> ByteString
+inputReferenceToRow = outputReferenceToRow
+
+inputReferenceFromRow :: ByteString -> App.InputReference
+inputReferenceFromRow = outputReferenceFromRow
+
+extendedInputReferenceFromRow :: ByteString -> App.ExtendedInputReference
+extendedInputReferenceFromRow = extendedOutputReferenceFromRow
 
 --
 -- Pattern

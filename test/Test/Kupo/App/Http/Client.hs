@@ -32,10 +32,10 @@ import Kupo.Data.Cardano
     , BinaryData
     , Datum (..)
     , DatumHash
+    , ExtendedInputReference
     , ExtendedOutputReference
     , Metadata
     , MetadataHash
-    , OutputReference
     , Point
     , Script
     , ScriptHash
@@ -49,6 +49,7 @@ import Kupo.Data.Cardano
     , getPointSlotNo
     , metadataFromText
     , metadataHashFromText
+    , mkInputReference
     , mkOutputReference
     , pointFromText
     , scriptFromBytes
@@ -439,11 +440,13 @@ decodeRedeemer =
             Nothing ->
                 pure Nothing
 
-decodeInputReference :: Json.KeyMap Json.Value -> Json.Parser OutputReference
+decodeInputReference :: Json.KeyMap Json.Value -> Json.Parser ExtendedInputReference
 decodeInputReference o = do
-    mkOutputReference
+    txIx <- o .: "transaction_index"
+    inRef <- mkInputReference
         <$> (o .: "transaction_id" >>= decodeTransactionId)
         <*> o .: "input_index"
+    pure (inRef, txIx)
 
 decodeAddress
     :: Text

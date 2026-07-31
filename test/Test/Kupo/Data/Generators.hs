@@ -22,6 +22,7 @@ import Kupo.Data.Cardano
     , Block
     , Datum (..)
     , DatumHash
+    , ExtendedInputReference
     , ExtendedOutputReference
     , HeaderHash
     , Metadata
@@ -249,6 +250,9 @@ genExtendedOutputReference :: Gen ExtendedOutputReference
 genExtendedOutputReference = do
     (,) <$> genOutputReference <*> genTransactionIndex
 
+genExtendedInputReference :: Gen ExtendedInputReference
+genExtendedInputReference = genExtendedOutputReference
+
 genTransactionIndex :: Gen TransactionIndex
 genTransactionIndex =
     fromIntegral <$> choose (0 :: Int, 255)
@@ -287,7 +291,7 @@ genResultWith genPoint = Result
     <*> genScriptReference
     <*> genPoint
     <*> frequency [(1, pure Nothing), (5, Just <$> genPoint)]
-    <*> frequency [(1, pure Nothing), (5, Just <$> genOutputReference)]
+    <*> frequency [(1, pure Nothing), (5, Just <$> genExtendedInputReference)]
     <*> frequency [(1, pure Nothing), (5, Just <$> genBinaryData)]
 
 genOutput :: Gen Output
