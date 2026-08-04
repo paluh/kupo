@@ -126,9 +126,9 @@
       };
       hydraJobs = utils.flattenDerivationTree "-" hydraJobsPerSystem.${system};
       packages = {
+        inherit (project.hsPkgs.kupo.components.exes) kupo;
         # NOTE this is important or the static builds will fail with:
         # Error: pg_config not found
-        process-compose-postgres-yaml = pkgs.callPackage ./process-compose/postgres.nix {};
       };
       projectFlake = project.flake {};
     in {
